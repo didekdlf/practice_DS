@@ -26,11 +26,7 @@ Poly Add(Poly,Poly);
 Poly Mult(Poly,Poly);
 void printpoly(Poly);
 void main(){
-    int i;
-    for(i=0;i<5;i++){
-        printf("%d",i);
-    }
-    printf("%d",i);
+
     Poly p1,p2,p3;
     p1=Zero(p1);
     p2=Zero(p2);

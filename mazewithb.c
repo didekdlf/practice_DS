@@ -1,10 +1,10 @@
 #include<stdlib.h>
 #include<stdio.h>
-//#include <random>
-#define MAZE_SIZE 50
+
 
 //출구가 있는 경우
 int maze_border_x[12][15]={{0,1,0,0,0,1,1,0,0,0,1,1,1,1,1},{1,0,0,0,1,1,0,1,1,1,0,0,1,1,1},{0,1,1,0,0,0,0,1,1,1,1,0,0,1,1},{1,1,0,1,1,1,1,0,1,1,0,1,1,0,0},{1,1,0,1,0,0,1,0,1,1,1,1,1,1,1},{0,0,1,1,0,1,1,1,0,1,0,0,1,0,1},{0,0,1,1,0,1,1,1,0,1,0,0,1,0,1},{0,1,1,1,1,0,0,1,1,1,1,1,1,1,1},{0,0,1,1,0,1,1,0,1,1,1,1,1,0,1},{1,1,0,0,0,1,1,0,1,1,0,0,0,0,0},{0,0,1,1,1,1,1,0,0,0,1,1,1,1,0},{0,1,0,0,1,1,1,1,1,0,1,1,1,1,0}};
+
 
 //출구가 없는 경우
 //int maze_border_x[12][15]={{0,1,0,0,0,1,1,0,0,0,1,1,1,1,1},{1,0,0,0,1,1,0,1,1,1,0,0,1,1,1},{0,1,1,0,0,0,0,1,1,1,1,0,0,1,1},{1,1,0,1,1,1,1,0,1,1,0,1,1,0,0},{1,1,0,1,0,0,1,0,1,1,1,1,1,1,1},{0,0,1,1,0,1,1,1,0,1,0,0,1,0,1},{0,0,1,1,0,1,1,1,0,1,0,0,1,0,1},{0,1,1,1,1,0,0,1,1,1,1,1,1,1,1},{0,0,1,1,0,1,1,0,1,1,1,1,1,0,1},{1,1,0,0,0,1,1,0,1,1,0,0,0,0,0},{0,0,1,1,1,1,1,0,0,0,1,1,1,1,0},{0,1,0,0,1,1,1,1,1,0,1,1,1,1,1}};
@@ -31,13 +31,14 @@ void Border(void){//미로 외부에 1로 벽 세우기
 }
 
 
-typedef struct{
+typedef struct{//stack의 좌표 저장을 위한 자료형
     short int row;
     short int col;
-    short int dir;
+    short int dir;//움직이는 방향은 상하좌우 대각선 모두 합해서 8 -> 0~7 순서로 갈 수 있는 곳인지 판단할 때, 움직인 방향.
+                  //이후에 막다른 길이 나와서 해당 지점으로 돌아왔을 때, 0~dir까지의 방향은 이미 다녀온 곳이므로 그 다음부터 탐색할 수 있도록 하기 위한 변수 
 }element;
-
 element CreateEle(int,int,int);
+
 typedef struct{
     int top;
     element* ele;
@@ -78,20 +79,12 @@ void main(){
         printf("\n");
     }
     CreatePath(&path);
-    FindPath( &path);
+    FindPath( &path);//길찾기
     printf("\n\n");
     printPath(&path);
     printf("\n\n");
 
 }
-element CreateEle(int row,int col,int dir){
-    element ele;
-    ele.row=row;
-    ele.col=col;
-    ele.dir=dir;
-    return ele;
-}
-
 
 void FindPath(PATH* p){
 
@@ -179,7 +172,13 @@ void printMark(PATH* p){
    
 }
 
-
+element CreateEle(int row,int col,int dir){
+    element ele;
+    ele.row=row;
+    ele.col=col;
+    ele.dir=dir;
+    return ele;
+}
 
 STACK StackCreate(int stacksize){
     STACK s;
