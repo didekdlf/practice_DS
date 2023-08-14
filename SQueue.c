@@ -8,12 +8,17 @@ typedef struct SeQueue{
     int* q;
 }SQu;
 
+//ADT
 SQu CreateSQ(int);
 void AddSQ(SQu*,int);
+int IsFullSQ(SQu*);
+
 int IsEmptySQ(SQu*);
 void DeleteSQ(SQu*);
-int IsFullSQ(SQu*);
+
 void printQ(SQu);
+
+
 void main(){
     int i=0;
     for(i=0;i<=10;i++){

@@ -5,7 +5,7 @@ typedef struct CirQueue{
     int front;
     int rear;
     int size;
-    int state;
+    int state;//1 내용물이 있다. 0
     int* q;
 }CQu;
 
