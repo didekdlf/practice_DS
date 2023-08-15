@@ -1,22 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-
- void itoa(int n, char s[]){
-     int i, sign;
- 
-     if ((sign = n) < 0)  /* record sign */
-         n = -n;          /* make n positive */
-     i = 0;
-     do {       /* generate digits in reverse order */
-         s[i++] = n % 10 + '0';   /* get next digit */
-     } while ((n /= 10) > 0);     /* delete it */
-     if (sign < 0)
-         s[i++] = '-';
-     s[i] = '\0';
-     reverse(s);
- }
-
- 
+//계산은 정확히 하나 괄호 이외의 연산자 간의 우선 순위가 없다...ex)
 typedef struct Node {
   char data;
   struct Node *next;
@@ -47,56 +31,160 @@ typedef struct Tree_Node {
   struct Tree_Node *left_child;
   struct Tree_Node *right_child;
 } t_Node;
-t_Node *create_Node(void);
-
-typedef struct Edge {
-  int *child;
-} Edge;
+t_Node *create_t_Node(void);
 
 typedef struct Binary_Tree {
   t_Node *root;
   int level;
 } b_tree;
 
-b_tree create_tree(void);
+b_tree *create_tree(void);
+void add_ancestor(b_tree *, char, int);
+void add_child(b_tree *, char);
+void add_tree(b_tree *, b_tree *);
 void tree_traversal(t_Node *);
-
-
+int make_postfix(b_tree *, Lstack *);
+int Isoper(char);
+int calculator(t_Node *);
+int operand(int, char, char, t_Node *);
 int main(void) {
-
+  char input[] = {"1-2*5+3"};
+  Lstack express = create_Lstack();
+  for (int i = 8; i >= 0; i--) {
+    push(&express, input[i]);
+  }
+  print_Llist(&express.body);
+  b_tree *tree = create_tree();
+  make_postfix(tree, &express);
+  tree_traversal(tree->root);
+  printf("=%d", calculator(tree->root));
   return 1;
 }
 
+int calculator(t_Node *root) {
+  int result = 0;
+  int next = 0;
+  t_Node *node = root;
+  if (node->left_child != NULL) {
+    result = calculator(node->left_child);
+    if (Isoper(node->right_child->data) != 0) {
+      next = calculator(node->right_child);
+    } else {
+      next = node->right_child->data - '0';
+    }
+    switch (Isoper(node->data)) {
+    case 1:
+      result = result + next;
+      break;
+    case 2:
+      result = result - next;
+      break;
+    case 3:
+      result = result * next;
+      break;
+    case 4:
+      result = result / next;
+    default:
+      break;
+    }
+    return result;
+  } else {
+    return node->data - '0';
+  }
+}
 
+int Isoper(char inp) {
+  int temp = inp - '0';
+  if (temp == '+' - '0') {
+    return 1; // add
+  } else if (temp == '-' - '0') {
+    return 2;
+  } else if (temp == '*' - '0') {
+    return 3; // multiple
+  } else if (temp == '/' - '0') {
+    return 4;
+  } else if (temp == '(' - '0') {
+    return 5;
+  } else if ((temp == ')' - '0') || (temp == '\0' - '0')) {
+    return 6;
+  }
+  return 0;
+}
+int make_postfix(b_tree *tree, Lstack *express) {
+  char c;
+  int isoper;
+  int size = express->body.size;
+  for (int i = 0; i <= size; i++) {
+    c = pop(express);
+    isoper = Isoper(c);
+    if (isoper == 0) {
+      add_child(tree, c);
+    } else if (isoper == 5) {
+      b_tree *new_tree = create_tree();
+      make_postfix(new_tree, express);
+      add_tree(tree, new_tree);
+    } else if (isoper == 6) {
+      return 1;
+    } else {
+      add_ancestor(tree, c, 0);
+    }
+  }
+  return 0;
+}
 
-t_Node *create_Node(void) {
+void add_ancestor(b_tree *tree, char data,
+                  int direc) { // direc : 0 -> left, else -> right
+  t_Node *node = create_t_Node();
+
+  if (tree->root->data != '\0') {
+    if (direc == 0) {
+      node->left_child = tree->root;
+      tree->root = node;
+    } else {
+      node->right_child = tree->root;
+      tree->root = node;
+    }
+  }
+  tree->root->data = data;
+}
+void add_child(b_tree *tree, char data) {
+  if (tree->root->left_child == NULL) {
+    tree->root->left_child = create_t_Node();
+    tree->root->left_child->data = data;
+  } else if (tree->root->right_child == NULL) {
+    tree->root->right_child = create_t_Node();
+    tree->root->right_child->data = data;
+  }
+}
+void add_tree(b_tree *tree, b_tree *new_tree) {
+  if (tree->root->left_child == NULL) {
+    tree->root->left_child = new_tree->root;
+  } else if (tree->root->right_child == NULL) {
+    tree->root->right_child = new_tree->root;
+  }
+}
+t_Node *create_t_Node(void) {
   t_Node *node = (t_Node *)malloc(sizeof(t_Node));
-  node->data = 0;
+  node->data = '\0';
   node->left_child = NULL;
   node->right_child = NULL;
   return node;
 }
 
-b_tree create_tree(void) {
-  b_tree new_tree;
-  new_tree.level = 0;
-  new_tree.root = create_Node();
+b_tree *create_tree(void) {
+  b_tree *new_tree = (b_tree *)malloc(sizeof(b_tree));
+  new_tree->level = 0;
+  new_tree->root = create_t_Node();
   return new_tree;
 }
-void tree_traversal(t_Node *root) {
+void tree_traversal(t_Node *node) {
   // LVR
-  t_Node *node = root;
-  // moving left
-  if (node->left_child != NULL) {
-    node = node->left_child;
-    tree_traversal(node);
+  // moving leftg
+  if (node != NULL) {
+    tree_traversal(node->left_child);
+    printf("%c", node->data);
+    tree_traversal(node->right_child);
   }
-  else if(node->right_child != NULL) {
-    node = node->right_child;
-    tree_traversal(node);
-  }
-  printf("%d", node->data);
-  
 }
 // Lincked_list 연산
 Lstack create_Lstack(void) {
