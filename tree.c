@@ -48,7 +48,7 @@ int Isoper(char);
 int calculator(t_Node *);
 int operand(int, char, char, t_Node *);
 int main(void) {
-  char input[] = {"1-2*5+3"};
+  char input[] = {"1+(2*3)"};
   Lstack express = create_Lstack();
   for (int i = 8; i >= 0; i--) {
     push(&express, input[i]);

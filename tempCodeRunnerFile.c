@@ -1,1 +1,1 @@
-printf("4");
+create_Q_tree(tree);
